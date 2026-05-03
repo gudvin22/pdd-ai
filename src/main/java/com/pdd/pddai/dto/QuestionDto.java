@@ -15,4 +15,5 @@ public class QuestionDto {
     private List<String> answersText;
     private String imageUrlSmall;
     private String imageUrlBig;
+    private String category;
 }

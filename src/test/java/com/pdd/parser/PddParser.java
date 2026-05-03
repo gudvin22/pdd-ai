@@ -18,7 +18,7 @@ public class PddParser {
         HttpClient client = HttpClient.newHttpClient();
         String address = "https://xn----7sbnackuskv0m.xn--p1ai/?bilet=";
 
-        for (int ticket = 1; ticket <= 40; ticket++) {
+        for (int ticket = 111; ticket <= 40; ticket++) {            // чтоб не запустилось
 
             String addressTicket = address + ticket;
             HttpRequest request = HttpRequest.newBuilder(URI.create(addressTicket)).build();
@@ -89,6 +89,7 @@ public class PddParser {
                 questionDto.setAnswersText(answers);
                 questionDto.setImageUrlSmall(imageUrlSmall);
                 questionDto.setImageUrlBig(imageUrlBig);
+                questionDto.setCategory("ABM");
 
                 questions.add(questionDto);         // положили QuestionDto в массив
 
