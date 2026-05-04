@@ -8,4 +8,5 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface QuestionRepository extends JpaRepository<QuestionEntity, Long> {
 
+    boolean existsByCategoryAndTicketNumberAndQuestionNumber(String category, Integer ticketNumber, Integer questionNumber);
 }
