@@ -99,7 +99,7 @@ public class PddParser {
 
         ObjectMapper mapper = new ObjectMapper();
         mapper.writeValue(new java.io.File("questions.json"), questions);
-        Thread.sleep(2000); // пауза 1 секунда между запросами
+        Thread.sleep(2000); // пауза 2 секундs между запросами
     }
 
 
