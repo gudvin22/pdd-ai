@@ -3,9 +3,13 @@ package com.pdd.pddai.entity;
 import com.pdd.pddai.enums.RoleUser;
 import com.pdd.pddai.enums.SubscriptionTypeUser;
 import jakarta.persistence.*;
+import lombok.Data;
 
 import java.time.LocalDateTime;
 
+@Entity
+@Data
+@Table(name = "users")
 public class UserEntity {
 
     @Id
