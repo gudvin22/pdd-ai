@@ -48,4 +48,13 @@ public class JwtUtil {
             return false;
         }
     }
+
+    public String getTelegramIdFromToken(String token) {
+        return Jwts.parserBuilder()
+                .setSigningKey(getSigningKey())
+                .build()
+                .parseClaimsJws(token)
+                .getBody()
+                .getSubject();
+         }
 }
