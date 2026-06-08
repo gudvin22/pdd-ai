@@ -39,6 +39,10 @@ public class QuestionEntity {
     @Column(name = "image_url_big", length = 500)
     private String imageUrlBig;
 
+    @ManyToOne
+    @JoinColumn(name = "topic_id")
+    private TopicEntity topic;
+
 
 
 
