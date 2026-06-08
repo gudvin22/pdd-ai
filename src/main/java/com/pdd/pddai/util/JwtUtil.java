@@ -13,7 +13,7 @@ import java.util.Date;
 @RequiredArgsConstructor
 public class JwtUtil {
 
-    private final JwtProperties jwtProperties;  // Spring внедрит через конструктор
+    private final JwtProperties jwtProperties;
 
     private Key getSigningKey() {
         return Keys.hmacShaKeyFor(jwtProperties.getSecret().getBytes());

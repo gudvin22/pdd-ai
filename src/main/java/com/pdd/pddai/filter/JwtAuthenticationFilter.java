@@ -1,5 +1,6 @@
 package com.pdd.pddai.filter;
 
+import com.pdd.pddai.service.UserService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -15,6 +16,7 @@ import java.io.IOException;
 @Component
 @RequiredArgsConstructor
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
+    private final UserService userService;
 
     private final com.pdd.pddai.util.JwtUtil jwtUtil; // полный путь, чтобы IDEA не ругалась
 
@@ -32,6 +34,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             if (jwtUtil.validateToken(token)) {
                 // извлекаем telegramId
                 String telegramId = jwtUtil.getTelegramIdFromToken(token);
+
+                //обновляем время последней активности
+                userService.setLastActiveDate(telegramId);
 
                 //Создаём объект аутентификации для Spring Security
                 UsernamePasswordAuthenticationToken authentication =
