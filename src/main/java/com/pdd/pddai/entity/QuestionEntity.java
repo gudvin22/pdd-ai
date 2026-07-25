@@ -43,6 +43,9 @@ public class QuestionEntity {
     @JoinColumn(name = "topic_id")
     private TopicEntity topic;
 
+    @Column(name = "quest_help", columnDefinition = "TEXT")
+    private String questHelp;
+
 
 
 

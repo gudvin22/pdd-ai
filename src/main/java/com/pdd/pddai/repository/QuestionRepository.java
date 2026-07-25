@@ -13,4 +13,6 @@ public interface QuestionRepository extends JpaRepository<QuestionEntity, Long> 
     boolean existsByCategoryAndTicketNumberAndQuestionNumber(String category, Integer ticketNumber, Integer questionNumber);
 
     List<QuestionEntity> findByTicketNumber(int ticketNumber);
+
+    List<QuestionEntity> findByQuestHelpIsNull();
 }
