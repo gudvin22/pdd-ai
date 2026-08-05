@@ -15,4 +15,5 @@ public interface QuestionRepository extends JpaRepository<QuestionEntity, Long> 
     List<QuestionEntity> findByTicketNumber(int ticketNumber);
 
     List<QuestionEntity> findByQuestHelpIsNull();
+    List<QuestionEntity> findByTicketNumberOrderByQuestionNumberAsc(int ticketNumber);
 }

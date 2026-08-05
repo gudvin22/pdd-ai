@@ -30,7 +30,7 @@ public class ExplanationGeneratorService {
         int fail = 0;
 
         // Проходим по каждому вопросу
-        for (int i = 0; i <= 99; i++) {
+        for (int i = 0; i <= 1; i++) {
             QuestionEntity question = questions.get(i);
 
             log.info("Обработка {}/{}: билет {}, вопрос {}",

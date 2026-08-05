@@ -21,7 +21,7 @@ public class ExamService {
 
             public List<QuestionResponseDto> getTicketNumber (int ticketNumber) {
 
-                List<QuestionEntity> questions = questionRepository.findByTicketNumber(ticketNumber);
+                List<QuestionEntity> questions = questionRepository.findByTicketNumberOrderByQuestionNumberAsc(ticketNumber);
                 if (questions.isEmpty()) {
                     throw new TicketNotFoundException("Билета с номером " +ticketNumber +" не существует");
                 }
@@ -44,7 +44,7 @@ public class ExamService {
 
     public List<WrongAnswerDto> checkExam(ExamCheckRequestDto request) {
 
-        List<QuestionEntity> questions = questionRepository.findByTicketNumber(request.getTicketNumber());
+        List<QuestionEntity> questions = questionRepository.findByTicketNumberOrderByQuestionNumberAsc(request.getTicketNumber());
         if (questions.isEmpty()) {
             throw new TicketNotFoundException("Билета с номером " +request.getTicketNumber() +" не существует");
         }
@@ -54,14 +54,24 @@ public class ExamService {
 
         List<WrongAnswerDto> wrongAnswers = new ArrayList<>();
 
+
         for (int i = 0; i < questions.size(); i++) {
             int correct = questions.get(i).getCorrectAnswerIndex();
             int user = request.getAnswers().get(i);
             if (correct != user) {
+                QuestionEntity question = questions.get(i);
                 WrongAnswerDto wrongAnswer = new WrongAnswerDto();
-                wrongAnswer.setQuestionNumber(i + 1);
+
+                wrongAnswer.setTicketNumber(request.getTicketNumber());
+                wrongAnswer.setQuestionNumber(question.getQuestionNumber());
                 wrongAnswer.setCorrectAnswerIndex(correct);
                 wrongAnswer.setUserAnswerIndex(user);
+                if (question.getQuestHelp() != null) {
+                    wrongAnswer.setExplanation(question.getQuestHelp());
+                }
+                if (question.getTopic() != null) {
+                    wrongAnswer.setTopicName(question.getTopic().getTopicName());
+                }
                 wrongAnswers.add(wrongAnswer);
             }
         }
