@@ -19,7 +19,7 @@ public class AiController {
     private final AgentService agentService;
     private final PromptBuilderService promptBuilderService;
 
-    @PostMapping("/analyze-error")
+    @PostMapping("/analyze-errors")
     public ResponseEntity<?> analyzeError(@RequestBody AiAnalysisTicketRequestDto aiAnalysisTicketRequestDto) {
 
         try {
