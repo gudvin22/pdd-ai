@@ -18,6 +18,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class ExamService {
     private final QuestionRepository questionRepository;
+    private final StatisticsService statisticsService;
 
             public List<QuestionResponseDto> getTicketNumber (int ticketNumber) {
 
@@ -75,6 +76,7 @@ public class ExamService {
                 wrongAnswers.add(wrongAnswer);
             }
         }
+
 
         return wrongAnswers;
     }
