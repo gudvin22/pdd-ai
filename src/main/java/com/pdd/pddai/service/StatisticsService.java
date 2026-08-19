@@ -1,9 +1,11 @@
 package com.pdd.pddai.service;
 
+import com.pdd.pddai.dto.TicketStatusDto;
 import com.pdd.pddai.dto.WrongAnswerDto;
 import com.pdd.pddai.entity.QuestionEntity;
 import com.pdd.pddai.entity.UserAttemptsEntity;
 import com.pdd.pddai.entity.UserEntity;
+import com.pdd.pddai.enums.TicketStatus;
 import com.pdd.pddai.repository.QuestionRepository;
 import com.pdd.pddai.repository.UserAttemptsRepository;
 import com.pdd.pddai.repository.UserRepository;
@@ -12,6 +14,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Service
@@ -60,4 +63,35 @@ public class StatisticsService {
 
 
     }
+
+    public List<TicketStatusDto> getTicketStatuses(Long userId) {
+        List<UserAttemptsEntity> attempts = userAttemptsRepository.findByUser_IdOrderByAttemptDateDesc(userId);
+
+        //Группируем по номеру билета, оставляя последнюю попытку (первую в списке)
+        Map<Integer, UserAttemptsEntity> lastAttemptByTicket = attempts.stream()
+                .collect(Collectors.toMap(
+                        UserAttemptsEntity::getTicketNumber,
+                        Function.identity(),
+                        (existing, replacement) -> existing // так как список уже отсортирован, первый элемент – самый новый
+                ));
+
+        List<TicketStatusDto> result = new ArrayList<>();
+        for (int i = 1; i <= 40; i++) {
+            UserAttemptsEntity attempt = lastAttemptByTicket.get(i);
+            TicketStatus status;
+            if (attempt == null) {
+                status = TicketStatus.NOT_ATTEMPTED;
+            } else if (attempt.getWrongCount() == 0) {
+                status = TicketStatus.CORRECT;
+            } else {
+                status = TicketStatus.INCORRECT;
+            }
+            result.add(new TicketStatusDto(i, status));
+        }
+        return result;
+        }
+
+
+
+
 }

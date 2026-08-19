@@ -42,6 +42,23 @@ public class ExamController {
         }
     }
 
+    @GetMapping("/ticket/{ticketNumber}")
+    public ResponseEntity<ExamResponseDto> getTicket(@PathVariable int ticketNumber) {
+        try {
+            List<QuestionResponseDto> questions = examService.getTicketNumber(ticketNumber);
+            ExamResponseDto examResponseDto = new ExamResponseDto();
+            examResponseDto.setQuestions(questions);
+            examResponseDto.setTicketNumber(ticketNumber);
+            return ResponseEntity.ok(examResponseDto);
+
+        } catch (TicketNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+        }
+    }
+
+
     @PostMapping("/check")
     public ResponseEntity<List<WrongAnswerDto>> checkTicket(@RequestBody ExamCheckRequestDto examCheckRequestDto) {
         try {
