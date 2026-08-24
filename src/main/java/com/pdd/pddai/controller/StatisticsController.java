@@ -1,6 +1,7 @@
 package com.pdd.pddai.controller;
 
 import com.pdd.pddai.dto.TicketStatusDto;
+import com.pdd.pddai.dto.UserStatisticsDto;
 import com.pdd.pddai.entity.UserEntity;
 import com.pdd.pddai.repository.UserRepository;
 import com.pdd.pddai.service.StatisticsService;
@@ -28,6 +29,18 @@ public class StatisticsController {
             UserEntity user = userRepository.findByTelegramId(telegramId)
                     .orElseThrow(() -> new RuntimeException("Пользователь не найден"));
             return ResponseEntity.ok(statisticsService.getTicketStatuses(user.getId()));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    @GetMapping("/user-stats")
+    public ResponseEntity<UserStatisticsDto> getUserStats() {
+        try {
+            String telegramId = (String) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+            UserEntity user = userRepository.findByTelegramId(telegramId)
+                    .orElseThrow(() -> new RuntimeException("Пользователь не найден"));
+            return ResponseEntity.ok(statisticsService.getUserStatistics(user.getId()));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }

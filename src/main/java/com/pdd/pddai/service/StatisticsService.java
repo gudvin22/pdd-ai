@@ -1,6 +1,8 @@
 package com.pdd.pddai.service;
 
 import com.pdd.pddai.dto.TicketStatusDto;
+import com.pdd.pddai.dto.UserStatisticsDto;
+import com.pdd.pddai.dto.WeakTopicDto;
 import com.pdd.pddai.dto.WrongAnswerDto;
 import com.pdd.pddai.entity.QuestionEntity;
 import com.pdd.pddai.entity.UserAttemptsEntity;
@@ -13,6 +15,7 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -91,6 +94,81 @@ public class StatisticsService {
         return result;
         }
 
+    public UserStatisticsDto getUserStatistics(Long userId) {
+        List<UserAttemptsEntity> attempts = userAttemptsRepository.findByUser_IdOrderByAttemptDateDesc(userId);
+
+        if (attempts.isEmpty()) {
+            return UserStatisticsDto.empty(userId);
+        }
+
+        int totalAttempts = attempts.size();
+        int totalWrongCount = attempts.stream().mapToInt(UserAttemptsEntity::getWrongCount).sum();
+
+        Map<Integer, UserAttemptsEntity> lastAttemptByTicket = new HashMap<>();
+        for(UserAttemptsEntity attempt : attempts) {
+            int ticketNumber = attempt.getTicketNumber();
+            UserAttemptsEntity lastAttempt = lastAttemptByTicket.get(ticketNumber);
+            if (lastAttempt == null || attempt.getAttemptDate().isAfter(lastAttempt.getAttemptDate())) {
+                lastAttemptByTicket.put(ticketNumber, attempt);
+            }
+        }
+
+        int correctTickets = 0;
+        int incorrectTickets = 0;
+
+        for (UserAttemptsEntity attempt : lastAttemptByTicket.values()) {
+            if (attempt.getWrongCount() == 0) {
+                correctTickets++;
+            } else {
+                incorrectTickets++;
+            }
+        }
+
+        LocalDateTime lastAttemptDate = attempts.stream()
+                .map(UserAttemptsEntity::getAttemptDate)
+                .max(LocalDateTime::compareTo)
+                .orElse(null);
+
+        return UserStatisticsDto.builder()
+                .userId(userId)
+                .totalAttempts(totalAttempts)
+                .correctTickets(correctTickets)
+                .incorrectTickets(incorrectTickets)
+                .totalWrong(totalWrongCount)
+                .lastAttemptDate(lastAttemptDate)
+                .weakTopics(getWeakTopics(attempts, 5)) // пока пустой список
+                .build();
+    }
+
+    private List<WeakTopicDto> getWeakTopics(List<UserAttemptsEntity> attempts, int limit) {
+
+        Map<Long, Integer> topicErrorCount = new HashMap<>();
+
+        for (UserAttemptsEntity attempt : attempts) {
+            if (attempt.getWrongTopicIds() != null) {
+
+                for (Integer topicId : attempt.getWrongTopicIds()) {
+
+                    topicErrorCount.put(topicId.longValue(),
+                            topicErrorCount.getOrDefault(topicId.longValue(), 0) + 1);
+                }
+            }
+        }
+
+        return topicErrorCount.entrySet().stream()
+                .sorted(Map.Entry.<Long, Integer>comparingByValue().reversed())
+                .limit(limit)
+                .map(entry -> {
+                    String topicName = questionRepository.findTopicNameById(entry.getKey())
+                            .orElse(null);
+                    if (topicName == null) {
+                        return null; // если тема не найдена — пропускаем
+                    }
+                    return new WeakTopicDto(entry.getKey(), topicName, entry.getValue());
+                })
+                .filter(Objects::nonNull)
+                .collect(Collectors.toList());
+    }
 
 
 

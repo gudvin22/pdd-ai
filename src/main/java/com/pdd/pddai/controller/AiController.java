@@ -1,16 +1,15 @@
 package com.pdd.pddai.controller;
 
 import com.pdd.pddai.dto.AiAnalysisTicketRequestDto;
+import com.pdd.pddai.dto.UserStatisticsDto;
 import com.pdd.pddai.exception.TicketNotFoundException;
 import com.pdd.pddai.service.AgentService;
 import com.pdd.pddai.service.PromptBuilderService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/ai")
@@ -34,4 +33,16 @@ public class AiController {
         }
 
     }
+    @GetMapping("/analyze-statistics")
+    public ResponseEntity<String> analyzeStatistics() {
+        try {
+            String telegramId = (String) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+            // ... найти пользователя, собрать статистику, отправить в AI
+            return ResponseEntity.ok("🧠 AI-анализ пока в разработке");
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Ошибка: " + e.getMessage());
+        }
+    }
+
 }
