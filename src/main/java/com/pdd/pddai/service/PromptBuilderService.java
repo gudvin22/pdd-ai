@@ -1,6 +1,8 @@
 package com.pdd.pddai.service;
 
 import com.pdd.pddai.dto.AiAnalysisTicketRequestDto;
+import com.pdd.pddai.dto.UserStatisticsDto;
+import com.pdd.pddai.dto.WeakTopicDto;
 import com.pdd.pddai.entity.QuestionEntity;
 import com.pdd.pddai.exception.TicketNotFoundException;
 import com.pdd.pddai.repository.QuestionRepository;
@@ -72,5 +74,39 @@ public class PromptBuilderService {
 
         return prompt.toString();
     }
+
+    public String buildPromptByStatistics(UserStatisticsDto stats) {
+        StringBuilder prompt = new StringBuilder();
+
+        int totalAnswers = stats.getTotalAttempts() * 20;
+        int correctAnswers = totalAnswers - stats.getTotalWrong();
+        int accuracy = totalAnswers == 0 ? 0 : (correctAnswers * 100) / totalAnswers;
+        int mastered = stats.getCorrectTickets();
+        int weakCount = stats.getWeakTopics() != null ? stats.getWeakTopics().size() : 0;
+        String topWeakTopic = stats.getWeakTopics() != null && !stats.getWeakTopics().isEmpty()
+                ? stats.getWeakTopics().get(0).getTopicName()
+                : "";
+
+        prompt.append("Ты — преподаватель ПДД. Дай ученику анализ и рекомендации по его статистике.\n\n");
+
+        prompt.append("Статистика:\n");
+        prompt.append("- Точность: ").append(accuracy).append("%\n");
+        prompt.append("- Билетов без ошибок: ").append(mastered).append(" из 40\n");
+        prompt.append("- Количество слабых тем: ").append(weakCount).append("\n");
+        prompt.append("- Самая слабая тема: ").append(topWeakTopic).append("\n\n");
+
+        prompt.append("Напиши ответ строго по структуре:\n");
+        prompt.append("1. Твоя точность — в процентах %. сколько надо времени уделять в день ?.\n");
+        prompt.append("2. Я подготовил для тебя задания именно по твоим слабым темам их несколько.\n");
+        prompt.append("3. Перейди в раздел «Рекомендация» в меню бота, чтобы начать тренировку.\n");
+        prompt.append("4. Сколько примерно надо времени для сдачи экзамена бех ошибок проанализируй.\n\n");
+
+        prompt.append("Не пиши общих фраз. Не предлагай решать билеты. Не пиши про сайт — только про раздел в меню бота.\n");
+        prompt.append("Ответ — 8-10 предложений.\n");
+        prompt.append("В конце добавь: «Текст ПДД РФ: https://www.consultant.ru/document/cons_doc_LAW_2709/».");
+
+        return prompt.toString();
+    }
+
 
 }
