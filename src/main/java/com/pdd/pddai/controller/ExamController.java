@@ -1,9 +1,6 @@
 package com.pdd.pddai.controller;
 
-import com.pdd.pddai.dto.ExamCheckRequestDto;
-import com.pdd.pddai.dto.ExamResponseDto;
-import com.pdd.pddai.dto.QuestionResponseDto;
-import com.pdd.pddai.dto.WrongAnswerDto;
+import com.pdd.pddai.dto.*;
 import com.pdd.pddai.exception.TicketNotFoundException;
 import com.pdd.pddai.service.ExamService;
 import com.pdd.pddai.service.StatisticsService;
@@ -81,6 +78,18 @@ public class ExamController {
 
         } catch (TicketNotFoundException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+        }
+    }
+
+
+    @GetMapping("/recommended-questions")
+    public ResponseEntity<List<RecommendationQuestionDto>> getRecommendedQuestions() {
+        try {
+            String telegramId = (String) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+            List<RecommendationQuestionDto> questions = examService.getRecommendedQuestions(telegramId);
+            return ResponseEntity.ok(questions);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
         }

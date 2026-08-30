@@ -2,11 +2,13 @@ package com.pdd.pddai.service;
 
 import com.pdd.pddai.dto.ExamCheckRequestDto;
 import com.pdd.pddai.dto.QuestionResponseDto;
+import com.pdd.pddai.dto.RecommendationQuestionDto;
 import com.pdd.pddai.dto.WrongAnswerDto;
 import com.pdd.pddai.entity.QuestionEntity;
 import com.pdd.pddai.entity.UserEntity;
 import com.pdd.pddai.exception.TicketNotFoundException;
 import com.pdd.pddai.repository.QuestionRepository;
+import com.pdd.pddai.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -18,19 +20,19 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class ExamService {
     private final QuestionRepository questionRepository;
-    private final StatisticsService statisticsService;
+    private final UserRepository userRepository;
 
-            public List<QuestionResponseDto> getTicketNumber (int ticketNumber) {
+    public List<QuestionResponseDto> getTicketNumber (int ticketNumber) {
 
-                List<QuestionEntity> questions = questionRepository.findByTicketNumberOrderByQuestionNumberAsc(ticketNumber);
-                if (questions.isEmpty()) {
-                    throw new TicketNotFoundException("Билета с номером " +ticketNumber +" не существует");
-                }
+        List<QuestionEntity> questions = questionRepository.findByTicketNumberOrderByQuestionNumberAsc(ticketNumber);
+        if (questions.isEmpty()) {
+            throw new TicketNotFoundException("Билета с номером " +ticketNumber +" не существует");
+        }
 
-                return questions.stream()
-                        .map(this::convertToDto)
-                        .collect(Collectors.toList());
-            }
+        return questions.stream()
+                .map(this::convertToDto)
+                .collect(Collectors.toList());
+    }
 
 
     private QuestionResponseDto convertToDto(QuestionEntity entity) {
@@ -55,7 +57,6 @@ public class ExamService {
 
         List<WrongAnswerDto> wrongAnswers = new ArrayList<>();
 
-
         for (int i = 0; i < questions.size(); i++) {
             int correct = questions.get(i).getCorrectAnswerIndex();
             int user = request.getAnswers().get(i);
@@ -76,9 +77,20 @@ public class ExamService {
                 wrongAnswers.add(wrongAnswer);
             }
         }
-
-
         return wrongAnswers;
+    }
+
+    public List<RecommendationQuestionDto> getRecommendedQuestions (String telegramId) {
+        List<RecommendationQuestionDto> recommendedQuestions = new ArrayList<>();
+
+        UserEntity user = userRepository.findByTelegramId(telegramId).orElseThrow(() -> new RuntimeException("Пользователь не найден"));
+
+        // Получить слабые темы (из StatisticsService)
+        // Выбрать 20 вопросов по этим темам
+        // Преобразовать в RecommendationQuestionDto
+        // Вернуть список
+
+        return new ArrayList<>();
     }
 
 }
