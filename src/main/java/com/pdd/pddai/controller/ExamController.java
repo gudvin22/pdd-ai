@@ -88,7 +88,7 @@ public class ExamController {
     public ResponseEntity<List<RecommendationQuestionDto>> getRecommendedQuestions() {
         try {
             String telegramId = (String) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-            List<RecommendationQuestionDto> questions = examService.getRecommendedQuestions(telegramId);
+            List<RecommendationQuestionDto> questions = examService.getRecommendedQuestions(telegramId, 20);
             return ResponseEntity.ok(questions);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);

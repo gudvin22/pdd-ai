@@ -1,19 +1,17 @@
 package com.pdd.pddai.service;
 
-import com.pdd.pddai.dto.ExamCheckRequestDto;
-import com.pdd.pddai.dto.QuestionResponseDto;
-import com.pdd.pddai.dto.RecommendationQuestionDto;
-import com.pdd.pddai.dto.WrongAnswerDto;
+import com.pdd.pddai.dto.*;
 import com.pdd.pddai.entity.QuestionEntity;
+import com.pdd.pddai.entity.UserAttemptsEntity;
 import com.pdd.pddai.entity.UserEntity;
 import com.pdd.pddai.exception.TicketNotFoundException;
 import com.pdd.pddai.repository.QuestionRepository;
+import com.pdd.pddai.repository.UserAttemptsRepository;
 import com.pdd.pddai.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -21,6 +19,10 @@ import java.util.stream.Collectors;
 public class ExamService {
     private final QuestionRepository questionRepository;
     private final UserRepository userRepository;
+    private final UserAttemptsRepository userAttemptsRepository;
+    private final StatisticsService statisticsService;
+
+
 
     public List<QuestionResponseDto> getTicketNumber (int ticketNumber) {
 
@@ -80,17 +82,53 @@ public class ExamService {
         return wrongAnswers;
     }
 
-    public List<RecommendationQuestionDto> getRecommendedQuestions (String telegramId) {
-        List<RecommendationQuestionDto> recommendedQuestions = new ArrayList<>();
+    public List<RecommendationQuestionDto> getRecommendedQuestions(String telegramId, int count) {
+        UserEntity user = userRepository.findByTelegramId(telegramId)
+                .orElseThrow(() -> new RuntimeException("Пользователь не найден"));
 
-        UserEntity user = userRepository.findByTelegramId(telegramId).orElseThrow(() -> new RuntimeException("Пользователь не найден"));
+        List<UserAttemptsEntity> attempts = userAttemptsRepository
+                .findByUser_IdOrderByAttemptDateDesc(user.getId());
 
-        // Получить слабые темы (из StatisticsService)
-        // Выбрать 20 вопросов по этим темам
-        // Преобразовать в RecommendationQuestionDto
-        // Вернуть список
+        if (attempts.isEmpty()) {
+            return new ArrayList<>();
+        }
 
-        return new ArrayList<>();
+        // Получаем топ-3 слабые темы (
+        List<WeakTopicDto> weakTopics = statisticsService.getWeakTopics(attempts, 3);
+
+        if (weakTopics.isEmpty()) {
+            return new ArrayList<>();
+        }
+
+        // Получаем ID тем
+        List<Long> topicIds = weakTopics.stream()
+                .map(WeakTopicDto::getTopicId)
+                .collect(Collectors.toList());
+
+        // Получаем все вопросы по этим темам
+        List<QuestionEntity> questions = questionRepository.findByTopic_IdIn(topicIds);
+
+        // Перемешиваем и берём первые count вопросов
+        Collections.shuffle(questions);
+        List<QuestionEntity> selectedQuestions = questions.stream()
+                .limit(count)
+                .collect(Collectors.toList());
+
+        // Преобразуем в DTO
+        return selectedQuestions.stream()
+                .map(this::convertToRecommendationDto)
+                .collect(Collectors.toList());
+    }
+
+    private RecommendationQuestionDto convertToRecommendationDto(QuestionEntity entity) {
+        RecommendationQuestionDto dto = new RecommendationQuestionDto();
+        dto.setQuestionId(entity.getId());
+        dto.setQuestionText(entity.getQuestionText());
+        dto.setAnswers(entity.getAnswersText());
+        dto.setCorrectAnswerIndex(entity.getCorrectAnswerIndex());
+        dto.setExplanation(entity.getQuestHelp());
+        dto.setImageUrlSmall(entity.getImageUrlSmall());
+        return dto;
     }
 
 }

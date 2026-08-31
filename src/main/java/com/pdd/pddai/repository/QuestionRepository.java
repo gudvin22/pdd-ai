@@ -23,4 +23,6 @@ public interface QuestionRepository extends JpaRepository<QuestionEntity, Long> 
 
     @Query("SELECT t.topicName FROM TopicEntity t WHERE t.id = :topicId")
     Optional<String> findTopicNameById(@Param("topicId") Long topicId);
+
+    List<QuestionEntity> findByTopic_IdIn(List<Long> topicIds);
 }

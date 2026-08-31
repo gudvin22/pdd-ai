@@ -6,7 +6,7 @@ import java.util.List;
 
 @Data
 public class RecommendationQuestionDto {
-    private int questionId;
+    private long questionId;
     private String questionText;
     private List<String> answers;
     private int correctAnswerIndex;

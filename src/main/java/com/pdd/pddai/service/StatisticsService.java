@@ -140,7 +140,7 @@ public class StatisticsService {
                 .build();
     }
 
-    private List<WeakTopicDto> getWeakTopics(List<UserAttemptsEntity> attempts, int limit) {
+    public List<WeakTopicDto> getWeakTopics(List<UserAttemptsEntity> attempts, int limit) {
 
         Map<Long, Integer> topicErrorCount = new HashMap<>();
 
