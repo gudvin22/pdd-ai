@@ -46,6 +46,13 @@ public class ExamService {
         return dto;
     }
 
+    public ExamResultDto checkExamStrict(ExamCheckRequestDto request) {
+        ExamResultDto result = new ExamResultDto();
+        return result;
+
+
+    }
+
 
     public List<WrongAnswerDto> checkExam(ExamCheckRequestDto request) {
 

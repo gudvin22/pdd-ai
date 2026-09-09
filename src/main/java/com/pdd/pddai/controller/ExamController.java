@@ -39,6 +39,7 @@ public class ExamController {
         }
     }
 
+
     @GetMapping("/ticket/{ticketNumber}")
     public ResponseEntity<ExamResponseDto> getTicket(@PathVariable int ticketNumber) {
         try {
@@ -82,6 +83,19 @@ public class ExamController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
         }
     }
+
+    @PostMapping("/check-exam")
+    public ResponseEntity<ExamResultDto> checkStrict(@RequestBody ExamCheckRequestDto request) {
+        try {
+            ExamResultDto result = examService.checkExamStrict(request);
+            return ResponseEntity.ok(result);
+        } catch (TicketNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+        }
+    }
+
 
 
     @GetMapping("/recommended-questions")
