@@ -2,12 +2,11 @@ package com.pdd.pddai.service;
 
 import com.pdd.pddai.dto.*;
 import com.pdd.pddai.entity.QuestionEntity;
+import com.pdd.pddai.entity.TopicBlockEntity;
 import com.pdd.pddai.entity.UserAttemptsEntity;
 import com.pdd.pddai.entity.UserEntity;
 import com.pdd.pddai.exception.TicketNotFoundException;
-import com.pdd.pddai.repository.QuestionRepository;
-import com.pdd.pddai.repository.UserAttemptsRepository;
-import com.pdd.pddai.repository.UserRepository;
+import com.pdd.pddai.repository.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -21,6 +20,7 @@ public class ExamService {
     private final UserRepository userRepository;
     private final UserAttemptsRepository userAttemptsRepository;
     private final StatisticsService statisticsService;
+    private final TopicBlockRepository  topicBlockRepository;
 
 
 
@@ -47,11 +47,91 @@ public class ExamService {
     }
 
     public ExamResultDto checkExamStrict(ExamCheckRequestDto request) {
+
+        List<WrongAnswerDto> wrongAnswers = checkExam(request);
+        int totalErrors = wrongAnswers.size();
+
+        // ошибки по блокам (Map: блок -> количество ошибок)
+        Map<Integer, Integer> errorCountByBlock = new HashMap<>();
+        for (WrongAnswerDto wrong : wrongAnswers) {
+            Integer block = getBlockByQuestionNumber(wrong.getQuestionNumber(), request.getTicketNumber());
+            if (block != null) {
+                errorCountByBlock.put(block, errorCountByBlock.getOrDefault(block, 0) + 1);
+            }
+        }
+
+        boolean passed = false;
+        String message = "";
+        List<QuestionResponseDto> additionalQuestions = new ArrayList<>();
+
+
+        if (totalErrors == 0) {
+            // 0 ошибок → сдан
+            passed = true;
+            message = "✅ Экзамен сдан! Отлично!";
+        } else if (totalErrors >= 3) {
+            // 3+ ошибок → не сдан
+            passed = false;
+            message = "❌ Экзамен не сдан. 3 и более ошибок.";
+        } else if (totalErrors == 1) {
+            // 1 ошибка → +5 вопросов из блока ошибки
+            Integer block = errorCountByBlock.keySet().iterator().next();
+            additionalQuestions = getAdditionalQuestions(block, request.getTicketNumber(), 5);
+            passed = false;
+            message = "⚠️ 1 ошибка. Ответьте на 5 дополнительных вопросов из блока " + block + ".";
+        } else if (totalErrors == 2) {
+            // Проверяем, в одном ли блоке ошибки
+            if (errorCountByBlock.size() == 1) {
+                // 2 ошибки в одном блоке → не сдан
+                passed = false;
+                message = "❌ Экзамен не сдан. 2 ошибки в одном блоке.";
+            } else {
+                // 2 ошибки в разных блоках → +10 вопросов
+                List<Integer> blocks = new ArrayList<>(errorCountByBlock.keySet());
+                additionalQuestions.addAll(getAdditionalQuestions(blocks.get(0), request.getTicketNumber(), 5));
+                additionalQuestions.addAll(getAdditionalQuestions(blocks.get(1), request.getTicketNumber(), 5));
+                passed = false;
+                message = "⚠️ 2 ошибки в разных блоках. Ответьте на 10 дополнительных вопросов.";
+            }
+        }
+
         ExamResultDto result = new ExamResultDto();
+        result.setPassed(passed);
+        result.setMessage(message);
+        result.setWrongAnswers(wrongAnswers);
+        result.setAdditionalQuestions(additionalQuestions);
         return result;
-
-
     }
+
+    private List<QuestionResponseDto> getAdditionalQuestions(Integer block, int ticketNumber, int count) {
+        // Получаем вопросы из блока, исключая вопросы текущего билета
+        List<QuestionEntity> questions = questionRepository.findByBlockAndNotInTicket(block, ticketNumber);
+        Collections.shuffle(questions);
+
+        // Берём нужное количество
+        return questions.stream()
+                .limit(count)
+                .map(this::convertToDto)
+                .collect(Collectors.toList());
+    }
+
+    private Integer getBlockByQuestionNumber(int questionNumber, int ticketNumber) {
+        //Находим вопрос по номеру билета и номеру вопроса
+        QuestionEntity question = questionRepository
+                .findByTicketNumberAndQuestionNumber(ticketNumber, questionNumber)
+                .orElse(null);
+
+        if (question == null || question.getTopic() == null) {
+            return null;
+        }
+
+        //Определяем блок по теме вопроса
+        return topicBlockRepository.findByTopicId(question.getTopic().getId())
+                .map(TopicBlockEntity::getBlockNumber)
+                .orElse(null);
+    }
+
+    //--------------------------------------------------------------------------
 
 
     public List<WrongAnswerDto> checkExam(ExamCheckRequestDto request) {

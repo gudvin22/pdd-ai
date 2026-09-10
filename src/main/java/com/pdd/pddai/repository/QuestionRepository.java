@@ -25,4 +25,13 @@ public interface QuestionRepository extends JpaRepository<QuestionEntity, Long> 
     Optional<String> findTopicNameById(@Param("topicId") Long topicId);
 
     List<QuestionEntity> findByTopic_IdIn(List<Long> topicIds);
+
+    @Query("SELECT q FROM QuestionEntity q " +
+            "JOIN TopicBlockEntity tb ON tb.topic.id = q.topic.id " +
+            "WHERE tb.blockNumber = :block " +
+            "AND q.ticketNumber != :ticketNumber")
+    List<QuestionEntity> findByBlockAndNotInTicket(@Param("block") Integer block,
+                                                   @Param("ticketNumber") int ticketNumber);
+
+    Optional<QuestionEntity> findByTicketNumberAndQuestionNumber(int ticketNumber, int questionNumber);
 }
