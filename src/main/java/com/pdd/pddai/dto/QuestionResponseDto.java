@@ -10,5 +10,6 @@ public class QuestionResponseDto {
     private String questionText;
     private List<String> answersText;
     private String imageUrlSmall;
+    private int correctAnswerIndex;
 
 }

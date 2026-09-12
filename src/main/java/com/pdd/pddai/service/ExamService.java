@@ -43,6 +43,7 @@ public class ExamService {
         dto.setQuestionText(entity.getQuestionText());
         dto.setAnswersText(entity.getAnswersText());
         dto.setImageUrlSmall(entity.getImageUrlSmall());
+        dto.setCorrectAnswerIndex(entity.getCorrectAnswerIndex());
         return dto;
     }
 
