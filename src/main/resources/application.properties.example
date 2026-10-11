@@ -1,0 +1,24 @@
+spring.application.name=pdd-ai
+
+# ========== Database ==========
+spring.datasource.url=${DB_URL}
+spring.datasource.username=${DB_USERNAME}
+spring.datasource.password=${DB_PASSWORD}
+spring.datasource.driver-class-name=org.postgresql.Driver
+
+# ========== JPA ==========
+spring.jpa.hibernate.ddl-auto=update
+spring.jpa.show-sql=true
+spring.jpa.properties.hibernate.dialect=org.hibernate.dialect.PostgreSQLDialect
+
+# ========== Import ==========
+import.questions.file=classpath:questions.json
+
+# ========== JWT ==========
+jwt.secret=${JWT_SECRET}
+jwt.expiration=${JWT_EXPIRATION}
+
+# ========== Yandex AI ==========
+yandex.api.key=${YANDEX_API_KEY}
+yandex.folder.id=${YANDEX_FOLDER_ID}
+yandex.agent.id=${YANDEX_AGENT_ID}

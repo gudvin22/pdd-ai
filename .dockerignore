@@ -1,0 +1,15 @@
+target/
+.git/
+.gitignore
+.idea/
+*.iml
+.vscode/
+.mvn/
+mvnw
+mvnw.cmd
+README.md
+*.log
+*.md
+application-local.properties
+application-secret.properties
+.env
