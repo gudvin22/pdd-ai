@@ -1,6 +1,7 @@
 package com.pdd.pddai.repository;
 
 import com.pdd.pddai.entity.QuestionEntity;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -10,6 +11,7 @@ import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+@Disabled("Requires real database, skipping in CI")
 @SpringBootTest
 @Transactional
 class QuestionRepositoryTest {
