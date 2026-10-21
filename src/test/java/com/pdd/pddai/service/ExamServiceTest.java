@@ -38,12 +38,14 @@ class ExamServiceTest {
         q1.setQuestionText("Вопрос 1");
         q1.setAnswersText(List.of("A", "B", "C"));
         q1.setImageUrlSmall("img1.jpg");
+        q1.setCorrectAnswerIndex(0); // Исправлено: добавлен индекс ответа
 
         QuestionEntity q2 = new QuestionEntity();
         q2.setQuestionNumber(2);
         q2.setQuestionText("Вопрос 2");
         q2.setAnswersText(List.of("D", "E", "F"));
         q2.setImageUrlSmall("img2.jpg");
+        q2.setCorrectAnswerIndex(1); // Исправлено: добавлен индекс ответа
 
         when(questionRepository.findByTicketNumberOrderByQuestionNumberAsc(ticketNumber))
                 .thenReturn(List.of(q1, q2));
@@ -187,9 +189,13 @@ class ExamServiceTest {
         request.setTicketNumber(ticketNumber);
         request.setAnswers(userAnswers);
 
-        // Репозиторий возвращает 3 вопроса
+        // Репозиторий возвращает 3 вопроса (исправлено: добавили correctAnswerIndex)
+        QuestionEntity q1 = new QuestionEntity(); q1.setCorrectAnswerIndex(0);
+        QuestionEntity q2 = new QuestionEntity(); q2.setCorrectAnswerIndex(1);
+        QuestionEntity q3 = new QuestionEntity(); q3.setCorrectAnswerIndex(2);
+
         when(questionRepository.findByTicketNumberOrderByQuestionNumberAsc(ticketNumber))
-                .thenReturn(List.of(new QuestionEntity(), new QuestionEntity(), new QuestionEntity()));
+                .thenReturn(List.of(q1, q2, q3));
 
         // 2. Действие + проверка
         assertThatThrownBy(() -> examService.checkExam(request))
